@@ -1,6 +1,6 @@
 {
-  "versionCode": 1,
-  "versionName": "1.0",
+  "versionCode": 3,
+  "versionName": "2.1",
   "apkUrl": "https://raw.githubusercontent.com/hasan-soliev/back-res/main/namaz-update.apk",
-  "notes": ""
+  "notes": "Виджетҳои нав: «Соат» ва «Хурд». Пас аз намоз телефон ба ҳолати пештара (ларзиш/овоз) бармегардад. Ҳангоми насби аввал огоҳӣ ва ҳолати беовоз худкор фаъол мешаванд."
 }
