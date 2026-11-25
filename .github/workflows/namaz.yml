@@ -1,0 +1,67 @@
+# «Бэкенд» приложения «Вақти намоз» без сервера.
+#
+# Добавить месяц: загрузите скриншот таблицы в namaz/inbox/ (Add file → Upload files на GitHub).
+# Action распознает его, сохранит namaz/months/<дата>.json и пересоберёт namaz/schedules.json,
+# который читает приложение. Поправить время руками — отредактируйте файл в namaz/months/.
+#
+# Нужен секрет репозитория ANTHROPIC_API_KEY (Settings → Secrets and variables → Actions).
+name: namaz schedules
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'namaz/inbox/**'
+      - 'namaz/months/**'
+      - 'namaz/tools/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: namaz-schedules
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: namaz/tools/package-lock.json
+
+      - run: npm ci
+        working-directory: namaz/tools
+
+      - name: Распознать скриншоты из inbox
+        id: ocr
+        continue-on-error: true
+        run: node namaz/tools/ocr.js
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Собрать schedules.json
+        run: node namaz/tools/build.js
+
+      - name: Сохранить изменения
+        run: |
+          git add -A namaz/months namaz/inbox namaz/schedules.json
+          if git diff --cached --quiet; then
+            echo "Изменений нет"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "namaz: обновлено расписание"
+          git push
+
+      - name: Ошибка распознавания
+        if: steps.ocr.outcome == 'failure'
+        run: |
+          echo "::error::Часть скриншотов не распознана — они остались в namaz/inbox/. Смотрите шаг «Распознать скриншоты»."
+          exit 1

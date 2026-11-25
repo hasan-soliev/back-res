@@ -1,0 +1,17 @@
+{
+  "name": "namaz-tools",
+  "private": true,
+  "type": "module",
+  "description": "Сборка schedules.json и распознавание скриншотов таблиц для приложения «Вақти намоз»",
+  "scripts": {
+    "build": "node build.js",
+    "ocr": "node ocr.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
+    "zod": "^4.6.5"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
